@@ -2,7 +2,6 @@ from dotenv import load_dotenv
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
-from sqlalchemy import UniqueConstraint
 import os
 load_dotenv()
 #incio de la app
@@ -27,8 +26,6 @@ class Product(db.Model):
     description = db.Column(db.String(200))
     price = db.Column(db.Float)
     qty = db.Column(db.Integer)
-
-    UniqueConstraint('name')
     
 
     def __init__(self, name, description, price, qty):
