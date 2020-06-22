@@ -11,11 +11,10 @@ flask-sqlalchemy = "*"
 flask-marshmallow = "*"
 marshmallow-sqlalchemy = "*"
 python-dotenv = "*"
+flask-migrate = "*"
 
 [requires]
 python_version = "3.8"
-
-
 
 [scripts]
 start="flask run"
