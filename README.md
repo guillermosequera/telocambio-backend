@@ -12,3 +12,12 @@ en su version 3.8.3 para el desarrollo de este proyecto se utilizarion los sigui
 
 referencia de mashmallow en usuarios
 https://stackoverflow.com/questions/41858807/flask-marshmallow-sqlalchemy-serializing-many-to-many-relationships
+
+## Base de datos
+
+### para crear la base de datos
+pipenv run flask db init
+
+### Cuando ya esta creada para hacer las migraciones
+pipenv run flask db migrate
+pipenv run flask db upgrade

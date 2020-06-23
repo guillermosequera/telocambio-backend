@@ -11,7 +11,8 @@ app = Flask(__name__)
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 #base de datos
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'db.sqlite')
+# app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'db.sqlite')
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:@localhost/telocambio'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # inicio base de datos
@@ -113,9 +114,9 @@ def get_products():
 @app.route('/users', methods=['GET'])
 def get_users():
     all_users = User.query.all()
-    result = users_schemas.dump(all_products)
+    result = users_schemas.dump(all_users)
     return jsonify(result)
-    
+
 
 # Obteniendo un producto
 @app.route('/product/<id>', methods=['GET'])
