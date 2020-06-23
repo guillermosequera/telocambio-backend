@@ -13,6 +13,8 @@ marshmallow-sqlalchemy = "*"
 python-dotenv = "*"
 flask-migrate = "*"
 pymysql = "*"
+flask-jwt-extended = "*"
+flask-bcrypt = "*"
 
 [requires]
 python_version = "3.8"

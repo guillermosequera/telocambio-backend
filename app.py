@@ -3,7 +3,13 @@ from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
 from flask_migrate import Migrate
+from flask_jwt_extended import (
+    JWTManager, jwt_required, create_access_token,
+    get_jwt_identity
+)
+from flask_bcrypt import Bcrypt
 import os
+import json
 load_dotenv()
 #incio de la app
 
@@ -14,6 +20,10 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'db.sqlite')
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:@localhost/telocambio'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['JWT_SECRET_KEY'] = 'Gaq5qR6v7BMSojBSQqCs62UBxy9xiUSL15vE9T_KWaTCEziPRfe0WrFBvVZS4RTbqoEP8d0UB0EA'
+
+jwt = JWTManager(app)
+bcrypt = Bcrypt(app)
 
 # inicio base de datos
 db = SQLAlchemy(app)
@@ -27,7 +37,7 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     firstname = db.Column(db.String(100))
     lastname = db.Column(db.String(200))
-    email = db.Column(db.String(200))
+    email = db.Column(db.String(200), unique=True)
     password = db.Column(db.String(200))
     role = db.Column(db.String(100))
 
@@ -73,20 +83,48 @@ users_schemas = UserSchema(many=True)
 
 
 # Crea un USUARIO
-@app.route('/user', methods=['POST'])
+@app.route('/register', methods=['POST'])
 def add_user():
+    if not request.is_json:
+        return jsonify({"msg": "Missing JSON in request"}), 400
+
     firstname = request.json['firstname']
     lastname = request.json['lastname']
-    email = request.json['email']
-    password = request.json['password']
+    email = request.json.get('email', None)
+    password = request.json.get('password', None)
+    hashPassword = bcrypt.generate_password_hash(str(password), 10).decode('utf-8')
     role = request.json['role']
 
-    new_user = User(firstname, lastname, email, password, role)
+    if email is None:
+        return 'Missing email', 400
+    if password is None:
+        return 'Missing password',400
+
+        
+    new_user = User(firstname, lastname, email, hashPassword, role)
 
     db.session.add(new_user)
     db.session.commit()
     dump_data = user_schema.dump(new_user)
     return dump_data
+
+# Login de un USUARIO
+@app.route('/login', methods=['GET','POST'])
+def login_user():
+    email = request.json.get('email', None)
+    password = request.json.get('password', None)
+    if email is None:
+        return 'Missing email', 400
+    if password is None:
+        return 'Missing password',400
+    user = User.query.filter_by(email=email).first()
+    if not user:
+        return 'User not found', 404
+
+    if bcrypt.check_password_hash(user.password, str(password)):
+        return 'welcome back'
+    else: 
+        return 'wrong password!'
 
 # Crea un Producto
 @app.route('/product', methods=['POST'])
