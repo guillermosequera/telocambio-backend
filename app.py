@@ -44,7 +44,6 @@ class ProductSchema(ma.Schema):
 # inicio Schema
 product_schema = ProductSchema()
 products_schemas = ProductSchema(many=True)
-
 # Crea un Producto
 
 @app.route('/product', methods=['POST'])
@@ -63,7 +62,7 @@ def add_product():
     return dump_data
 
 # Obteniendo todos los productos
-@app.route('/product', methods=['GET'])
+@app.route('/products', methods=['GET'])
 def get_products():
     all_products = Product.query.all()
     result = products_schemas.dump(all_products)
