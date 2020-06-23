@@ -43,6 +43,7 @@ class ProductSchema(ma.Schema):
 
 # inicio Schema
 product_schema = ProductSchema()
+products_schemas = ProductSchema(many=True)
 
 # Crea un Producto
 
@@ -65,14 +66,45 @@ def add_product():
 @app.route('/product', methods=['GET'])
 def get_products():
     all_products = Product.query.all()
-    result = product_schema.dump(all_products)
-    return f'{result.data}'
+    result = products_schemas.dump(all_products)
+    return jsonify(result)
 
 # Obteniendo un producto
 @app.route('/product/<id>', methods=['GET'])
-def get_product():
+def get_product(id):
     product = Product.query.get(id)
-    return f'{product_schema(product)}'
+    return product_schema.jsonify(product)
+
+# Modifica un producto
+@app.route('/product/<id>', methods=['PUT'])
+def update_product(id):
+    product = Product.query.get(id)
+
+    name = request.json['name']
+    description = request.json['description']
+    price = request.json['price']
+    qty = request.json['qty']
+
+    product.name = name
+    product.description = description
+    product.price = price
+    product.qty = qty
+
+    
+    db.session.commit()
+    dump_data = product_schema.dump(product)
+
+    return dump_data
+
+# Elimina un producto
+@app.route('/product/<id>', methods=['DELETE'])
+def delete_product(id):
+    product = Product.query.get(id)
+    db.session.delete(product)
+    db.session.commit()
+
+    return product_schema.jsonify(product)
+ 
 
 
 
