@@ -43,7 +43,7 @@ class ProductSchema(ma.Schema):
 
 # inicio Schema
 product_schema = ProductSchema()
-
+products_schemas = ProductSchema(many=True)
 # Crea un Producto
 
 @app.route('/product', methods=['POST'])
@@ -53,12 +53,30 @@ def add_product():
     price = request.json['price']
     qty = request.json['qty']
 
-    new_product = Product (name, description, price, qty)
+    new_product = Product(name, description, price, qty)
 
     db.session.add(new_product)
     db.session.commit()
     dump_data = product_schema.dump(new_product)
+
     return dump_data
+
+# Obteniendo todos los productos
+@app.route('/products', methods=['GET'])
+def get_products():
+    all_products = Product.query.all()
+    print(all_products)
+    result = products_schemas.dump(all_products)
+    return jsonify(result)
+
+# Obteniendo un producto
+@app.route('/product/<id>', methods=['GET'])
+def get_product(id):
+    product = Product.query.get(id)
+    result = product_schema.dump(product)
+    return result
+
+
 
 #servidor
 
