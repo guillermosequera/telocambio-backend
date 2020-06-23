@@ -122,9 +122,18 @@ def login_user():
         return 'User not found', 404
 
     if bcrypt.check_password_hash(user.password, str(password)):
-        return 'welcome back'
+        access_token = create_access_token(identity=user.id)
+        return jsonify(access_token=access_token), 200
     else: 
+        
         return 'wrong password!'
+
+@app.route('/token', methods=['GET'])
+@jwt_required
+def token_user():
+    current_user = get_jwt_identity()
+    user = User.query.get(current_user)
+    return user_schema.jsonify(user)
 
 # Crea un Producto
 @app.route('/product', methods=['POST'])
