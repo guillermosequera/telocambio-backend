@@ -113,7 +113,7 @@ def add_user():
     db.session.add(new_user)
     db.session.commit()
     dump_data = user_schema.dump(new_user)
-    return dump_data, 200
+    return dump_data
 
 # Login de un USUARIO
 @app.route('/login', methods=['GET','POST'])
