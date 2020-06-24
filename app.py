@@ -16,7 +16,7 @@ load_dotenv()
 
 app = Flask(__name__)
 CORS(app)
-app.config['CORS_HEADERS'] = 'Content-Type'
+# app.config['CORS_HEADERS'] = 'Content-Type'
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 
@@ -89,17 +89,18 @@ users_schemas = UserSchema(many=True)
 
 
 # Crea un USUARIO
-@app.route('/register', methods=['POST'])
+@app.route('/register', methods=['GET','POST'])
 def add_user():
     if not request.is_json:
         return jsonify({"msg": "Missing JSON in request"}), 400
 
-    firstname = request.json['firstname']
-    lastname = request.json['lastname']
+    firstname = request.json.get('firstname', None)
+    lastname = request.json.get('lastname', None) 
     email = request.json.get('email', None)
     password = request.json.get('password', None)
     hashPassword = bcrypt.generate_password_hash(str(password), 10).decode('utf-8')
-    role = request.json['role']
+    # role = request.json['role']
+    role = 'user'
 
     if email is None:
         return 'Missing email', 400
@@ -112,7 +113,7 @@ def add_user():
     db.session.add(new_user)
     db.session.commit()
     dump_data = user_schema.dump(new_user)
-    return dump_data
+    return dump_data, 200
 
 # Login de un USUARIO
 @app.route('/login', methods=['GET','POST'])
