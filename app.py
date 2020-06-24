@@ -191,6 +191,15 @@ def get_products():
     result = products_schemas.dump(all_products)
     return jsonify(result)
 
+
+# Obteniendo los productos por usuario
+@app.route('/products/user/<id>', methods=['GET'])
+def get_productsbyuser(id):
+    user = User.query.get(id)
+    user_products = user.products
+    result = products_schemas.dump(user_products)
+    return jsonify(result)
+
 # Obteniendo todos los usuarios
 @app.route('/users', methods=['GET'])
 def get_users():
