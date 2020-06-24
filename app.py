@@ -46,6 +46,7 @@ class User(db.Model):
     email = db.Column(db.String(200), unique=True)
     password = db.Column(db.String(200))
     role = db.Column(db.String(100))
+    products = db.relationship('Product', backref='user', lazy=True)
 
     def __init__(self, firstname, lastname, email, password, role):
         self.firstname = firstname
@@ -58,21 +59,32 @@ class User(db.Model):
 class Product(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), unique=False)
-    description = db.Column(db.String(200))
-    price = db.Column(db.Float)
-    qty = db.Column(db.Integer)
+    tags = db.Column(db.String(200))
+    shortDesc = db.Column(db.String(600))
+    longDesc = db.Column(db.String(1000))
+    cover_img = db.Column(db.String(600))
+    gallery = db.Column(db.String(600))
+    tradeBy = db.Column(db.String(600))
+    username = db.Column(db.String(600))
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'),nullable=False)
     
 
-    def __init__(self, name, description, price, qty):
+    def __init__(self, name, tags, shortDesc, longDesc, cover_img, gallery, tradeBy, username, user_id):
         self.name = name
-        self.description = description
-        self.price = price
-        self.qty = qty
+        self.tags = tags
+        self.shortDesc = shortDesc
+        self.longDesc = longDesc
+        self.cover_img = cover_img
+        self.gallery = gallery
+        self.tradeBy = tradeBy
+        self.username = username
+        self.user_id = user_id
+        
 
 # Esquema de producto
 class ProductSchema(ma.Schema):
     class Meta:
-        fields = ('id', 'name', 'description', 'price', 'qty')
+        fields = ('id', 'name', 'tags', 'shortDesc', 'longDesc', 'cover_img', 'gallery', 'tradeBy','username', 'user_id')
 
 # Esquema de usuario
 class UserSchema(ma.Schema):
@@ -147,12 +159,26 @@ def token_user():
 @app.route('/product', methods=['POST'])
 def add_product():
     name = request.json['name']
-    description = request.json['description']
-    price = request.json['price']
-    qty = request.json['qty']
+    tags = request.json['tags']
+    shortDesc = request.json['shortDesc']
+    longDesc = request.json['longDesc']
+    cover_img = request.json['cover_img']
+    
+    gallery1 = request.json['gallery1']
+    gallery2 = request.json['gallery2']
+    gallery3 = request.json['gallery3']
+    gallery4 = request.json['gallery4']
+    gallery5 = request.json['gallery5']
+    gallery6 = request.json['gallery6']
+    
+    gallery = ','.join(map(str, [gallery1, gallery2,gallery3,gallery4,gallery5,gallery6])) 
+    
+    tradeBy = request.json['tradeBy']
+    user_id = request.json['user_id']
+    username = request.json['username']
 
-    new_product = Product(name, description, price, qty)
-
+    new_product = Product(name, tags, shortDesc, longDesc , cover_img, gallery, tradeBy, username, user_id  )
+    print(new_product)
     db.session.add(new_product)
     db.session.commit()
     dump_data = product_schema.dump(new_product)
