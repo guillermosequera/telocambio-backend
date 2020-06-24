@@ -10,11 +10,17 @@ from flask_jwt_extended import (
 from flask_bcrypt import Bcrypt
 import os
 import json
+from flask_cors import CORS
 load_dotenv()
 #incio de la app
 
 app = Flask(__name__)
+CORS(app)
+app.config['CORS_HEADERS'] = 'Content-Type'
+
 basedir = os.path.abspath(os.path.dirname(__file__))
+
+
 
 #base de datos
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'db.sqlite')
@@ -132,8 +138,9 @@ def login_user():
 @jwt_required
 def token_user():
     current_user = get_jwt_identity()
+    print(current_user)
     user = User.query.get(current_user)
-    return user_schema.jsonify(user)
+    return user_schema.jsonify(user), 200
 
 # Crea un Producto
 @app.route('/product', methods=['POST'])
