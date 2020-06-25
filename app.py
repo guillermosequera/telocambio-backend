@@ -3,7 +3,7 @@ from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import distinct
 from flask_marshmallow import Marshmallow
-from settings import *
+from settings import SQLALCHEMY_DATABASE_URI, JWT_SECRET_KEY
 from flask_migrate import Migrate
 from flask_jwt_extended import (
     JWTManager, jwt_required, create_access_token,
