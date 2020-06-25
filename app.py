@@ -1,10 +1,8 @@
 from dotenv import load_dotenv
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import distinct
 from flask_marshmallow import Marshmallow
-from marshmallow import Schema, fields
-from sqlalchemy.orm import aliased
-
 
 from flask_migrate import Migrate
 from flask_jwt_extended import (
@@ -116,7 +114,6 @@ class UserSchema(ma.Schema):
 
 # Esquema de swap
 class SwapSchema(ma.Schema):
-    Product=fields.Nested(ProductSchema)
     class Meta:
         fields = ('id', 'oferta_id', 'muestra_id', 'done', 'date')
 
@@ -241,17 +238,9 @@ def create_swap():
     
 @app.route('/swap/<id>', methods=['GET'])
 def get_swap(id):
-    # user = User.query.filter_by(email=email).first()
-    productoferta = aliased(Product)
-    products = Productswap.query.filter_by(muestra_id=id).join(productoferta, Productswap.oferta_id == productoferta.id).all()
-    # products = Productswap.query.filter_by(muestra_id=id).options(db.joinedload(Productswap.oferta_id)).all()
-    ofertas = list(map(lambda item: item.oferta_id, products))
-    ofertas = list(dict.fromkeys(ofertas))
-    products2 = Product.query.filter(Product.id.in_(ofertas)).all()
-    # print(list(products)[0].productoferta)
+    products = Productswap.query.filter_by(muestra_id=id).join(Product, Product.id == Productswap.oferta_id).add_columns(Product.id, Product.name, Product.tags, Product.shortDesc, Product.longDesc, Product.cover_img, Product.gallery, Product.tradeBy, Product.username, Product.done).all()
 
-    # products2 = Product.query.filter(products.oferta_id)
-    result = products_schemas.dump(products2)
+    result = products_schemas.dump(products)
     return jsonify(result)
 
 
