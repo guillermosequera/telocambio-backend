@@ -239,10 +239,20 @@ def create_swap():
 @app.route('/swap/<id>', methods=['GET'])
 def get_swap(id):
     products = Productswap.query.filter_by(muestra_id=id).join(Product, Product.id == Productswap.oferta_id).add_columns(Product.id, Product.name, Product.tags, Product.shortDesc, Product.longDesc, Product.cover_img, Product.gallery, Product.tradeBy, Product.username, Product.done).all()
-
     result = products_schemas.dump(products)
     return jsonify(result)
 
+@app.route('/swap/done', methods=['POST'])
+def done_swap():
+    ofertaid = request.json['oferta_id']
+    muestraid = request.json['muestra_id']
+    done = request.json['done']
+    productswap = Productswap.query.filter_by(muestra_id=muestraid).filter_by(oferta_id=ofertaid).first()
+    productswap.done = done 
+    db.session.commit()
+
+    result = swap_schema.dump(productswap)
+    return result
 
 
 # Obteniendo los productos por usuario
