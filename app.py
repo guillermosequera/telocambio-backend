@@ -306,7 +306,9 @@ def delete_product(id):
 
     return product_schema.jsonify(product)
  
-
+@app.route('/', methods=['GET'])
+def test():
+    return 'funciona'
 
 
 #servidor
