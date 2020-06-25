@@ -2,6 +2,10 @@ from dotenv import load_dotenv
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
+from marshmallow import Schema, fields
+from sqlalchemy.orm import aliased
+
+
 from flask_migrate import Migrate
 from flask_jwt_extended import (
     JWTManager, jwt_required, create_access_token,
@@ -10,6 +14,7 @@ from flask_jwt_extended import (
 from flask_bcrypt import Bcrypt
 import os
 import json
+import datetime
 from flask_cors import CORS
 load_dotenv()
 #incio de la app
@@ -38,6 +43,17 @@ migrate = Migrate(app, db)
 #incio marshmallow
 ma = Marshmallow(app)
 
+class Productswap(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    oferta_id = db.Column(db.Integer, db.ForeignKey('product.id'),nullable=False)
+    muestra_id = db.Column(db.Integer, db.ForeignKey('product.id'),nullable=False) 
+    done = db.Column(db.Boolean, default=False)
+    date = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+    def __init__(self, muestra_id, oferta_id, done ):
+        self.muestra_id = muestra_id
+        self.oferta_id = oferta_id
+        self.done = done
+
 #user Class/Model
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -47,6 +63,7 @@ class User(db.Model):
     password = db.Column(db.String(200))
     role = db.Column(db.String(100))
     products = db.relationship('Product', backref='user', lazy=True)
+    
 
     def __init__(self, firstname, lastname, email, password, role):
         self.firstname = firstname
@@ -66,10 +83,12 @@ class Product(db.Model):
     gallery = db.Column(db.String(600))
     tradeBy = db.Column(db.String(600))
     username = db.Column(db.String(600))
+    done = db.Column(db.Boolean, default=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'),nullable=False)
-    
+    swap_muestra = db.relationship('Productswap', foreign_keys='Productswap.muestra_id')
+    swap_oferta = db.relationship('Productswap', foreign_keys='Productswap.oferta_id') 
 
-    def __init__(self, name, tags, shortDesc, longDesc, cover_img, gallery, tradeBy, username, user_id):
+    def __init__(self, name, tags, shortDesc, longDesc, cover_img, gallery, tradeBy, username, done, user_id):
         self.name = name
         self.tags = tags
         self.shortDesc = shortDesc
@@ -79,7 +98,11 @@ class Product(db.Model):
         self.tradeBy = tradeBy
         self.username = username
         self.user_id = user_id
+        self.done = done
         
+
+
+
 
 # Esquema de producto
 class ProductSchema(ma.Schema):
@@ -90,6 +113,17 @@ class ProductSchema(ma.Schema):
 class UserSchema(ma.Schema):
     class Meta:
         fields = ('id', 'firstname', 'lastname', 'email', 'password' , 'role')
+
+# Esquema de swap
+class SwapSchema(ma.Schema):
+    Product=fields.Nested(ProductSchema)
+    class Meta:
+        fields = ('id', 'oferta_id', 'muestra_id', 'done', 'date')
+
+
+# inicio Schema PRODUCTO
+swap_schema = SwapSchema()
+swap_schemas = SwapSchema(many=True)
 
 # inicio Schema PRODUCTO
 product_schema = ProductSchema()
@@ -126,6 +160,8 @@ def add_user():
     db.session.commit()
     dump_data = user_schema.dump(new_user)
     return dump_data
+
+
 
 # Login de un USUARIO
 @app.route('/login', methods=['GET','POST'])
@@ -190,6 +226,34 @@ def get_products():
     all_products = Product.query.all()
     result = products_schemas.dump(all_products)
     return jsonify(result)
+
+
+@app.route('/swap/create', methods=['POST'])
+def create_swap():
+    oferta_id = request.json['oferta_id']
+    muestra_id = request.json['muestra_id']
+    done = request.json['done']
+    new_productswap = Productswap(muestra_id, oferta_id, done)
+    db.session.add(new_productswap)
+    db.session.commit()
+    result = swap_schema.dump(new_productswap)
+    return result
+    
+@app.route('/swap/<id>', methods=['GET'])
+def get_swap(id):
+    # user = User.query.filter_by(email=email).first()
+    productoferta = aliased(Product)
+    products = Productswap.query.filter_by(muestra_id=id).join(productoferta, Productswap.oferta_id == productoferta.id).all()
+    # products = Productswap.query.filter_by(muestra_id=id).options(db.joinedload(Productswap.oferta_id)).all()
+    ofertas = list(map(lambda item: item.oferta_id, products))
+    ofertas = list(dict.fromkeys(ofertas))
+    products2 = Product.query.filter(Product.id.in_(ofertas)).all()
+    # print(list(products)[0].productoferta)
+
+    # products2 = Product.query.filter(products.oferta_id)
+    result = products_schemas.dump(products2)
+    return jsonify(result)
+
 
 
 # Obteniendo los productos por usuario
