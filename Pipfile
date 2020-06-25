@@ -17,6 +17,7 @@ flask-jwt-extended = "*"
 flask-bcrypt = "*"
 flask-cors = "*"
 gunicorn = "*"
+psycopg2 = "*"
 
 [requires]
 python_version = "3.8"
