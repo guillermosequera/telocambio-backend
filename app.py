@@ -37,10 +37,10 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'db.sqlite')
 
 # MYSQL LOCAL
-# app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:@localhost/telocambio'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:@localhost/telocambio'
 
 # HEROKU POSTGRESS
-app.config['SQLALCHEMY_DATABASE_URI'] = "postgres://mzjzfmbvieoopk:47d4d3d8426745473cccf8acf4305dbcd2c4b46b157a37954c2a6d82a2480810@ec2-34-233-226-84.compute-1.amazonaws.com:5432/d602ph6akhserd"
+# app.config['SQLALCHEMY_DATABASE_URI'] = "postgres://mzjzfmbvieoopk:47d4d3d8426745473cccf8acf4305dbcd2c4b46b157a37954c2a6d82a2480810@ec2-34-233-226-84.compute-1.amazonaws.com:5432/d602ph6akhserd"
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['JWT_SECRET_KEY'] = 'Gaq5qR6v7BMSojBSQqCs62UBxy9xiUSL15vE9T_KWaTCEziPRfe0WrFBvVZS4RTbqoEP8d0UB0EA'
@@ -276,11 +276,15 @@ def create_swap():
     oferta_id = request.json['oferta_id']
     muestra_id = request.json['muestra_id']
     done = request.json['done']
-    new_productswap = Productswap(muestra_id, oferta_id, done)
-    db.session.add(new_productswap)
-    db.session.commit()
-    result = swap_schema.dump(new_productswap)
-    return result
+    productswap = Productswap.query.filter_by(muestra_id=muestra_id).filter_by(oferta_id=oferta_id).first()
+    if not productswap:
+        new_productswap = Productswap(muestra_id, oferta_id, done)
+        db.session.add(new_productswap)
+        db.session.commit()
+        result = swap_schema.dump(new_productswap)
+        return result
+    return 'Producto ya ofertado'
+    
     
 @app.route('/swap/<id>', methods=['GET'])
 def get_swap(id):
