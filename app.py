@@ -1,9 +1,8 @@
 from dotenv import load_dotenv
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import distinct
 from flask_marshmallow import Marshmallow
-from settings import SQLALCHEMY_DATABASE_URI, JWT_SECRET_KEY
+
 from flask_migrate import Migrate
 from flask_jwt_extended import (
     JWTManager, jwt_required, create_access_token,
@@ -11,6 +10,7 @@ from flask_jwt_extended import (
 )
 from flask_bcrypt import Bcrypt
 import os
+import settings
 import json
 import datetime
 from flask_cors import CORS
@@ -32,9 +32,9 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 
 
 
-app.config['SQLALCHEMY_DATABASE_URI'] = SQLALCHEMY_DATABASE_URI
+app.config['SQLALCHEMY_DATABASE_URI'] = settings.SQLALCHEMY_DATABASE_URI
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['JWT_SECRET_KEY'] = JWT_SECRET_KEY
+app.config['JWT_SECRET_KEY'] = settings.JWT_SECRET_KEY
 # app.config['JWT_SECRET_KEY'] = 'Gaq5qR6v7BMSojBSQqCs62UBxy9xiUSL15vE9T_KWaTCEziPRfe0WrFBvVZS4RTbqoEP8d0UB0EA'
 
 jwt = JWTManager(app)
