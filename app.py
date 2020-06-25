@@ -14,6 +14,15 @@ import settings
 import json
 import datetime
 from flask_cors import CORS
+
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+import email.message
+import smtplib
+
+#email
+
+
 load_dotenv()
 #incio de la app
 
@@ -22,8 +31,6 @@ CORS(app)
 # app.config['CORS_HEADERS'] = 'Content-Type'
 
 basedir = os.path.abspath(os.path.dirname(__file__))
-
-
 
 
 # SQlite
@@ -139,8 +146,39 @@ user_schema = UserSchema()
 users_schemas = UserSchema(many=True)
 
 
+# Envia un EMAIL
+@app.route('/sendemail', methods=['POST'])
+def send_email():
+    emailreq = request.json.get('email', None)
+    subject = request.json.get('subject', None) 
+    body = request.json.get('body', None) 
+
+    msg = email.message.Message()
+    # msg = MIMEMultipart()
+    # message = "Thank you"
+    
+    # setup the parameters of the message
+    password = "5^z49$50h7!p1dor8ii"
+    msg['From'] = 'telocambioappchile@gmail.com'
+    msg['To'] = emailreq
+    msg['Subject'] = subject
+    msg.add_header('Content-Type', 'text/html')
+    msg.set_payload(body)
+    
+    #create server
+    server = smtplib.SMTP('smtp.gmail.com: 587')
+    server.starttls()
+    # Login Credentials for sending the mail
+    server.login(msg['From'], password)
+    # send the message via the server.
+    server.sendmail(msg['From'], msg['To'], msg.as_string())
+    server.quit()
+    print("successfully sent email to %s:" % (msg['To']))
+
+    return "successfully sent email to %s:" % (msg['To'])
+    
 # Crea un USUARIO
-@app.route('/register', methods=['GET','POST'])
+@app.route('/register', methods=['POST'])
 def add_user():
     if not request.is_json:
         return jsonify({"msg": "Missing JSON in request"}), 400
@@ -169,7 +207,7 @@ def add_user():
 
 
 # Login de un USUARIO
-@app.route('/login', methods=['GET','POST'])
+@app.route('/login', methods=['POST'])
 def login_user():
     email = request.json.get('email', None)
     password = request.json.get('password', None)
@@ -316,7 +354,7 @@ def delete_product(id):
  
 @app.route('/', methods=['GET'])
 def test():
-    return 'funciona'
+    return 'API ONLINE'
 
 
 #servidor
