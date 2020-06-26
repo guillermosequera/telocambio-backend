@@ -286,6 +286,8 @@ def create_swap():
     muestra_id = request.json['muestra_id']
     done = request.json['done']
     productswap = Productswap.query.filter_by(muestra_id=muestra_id).filter_by(oferta_id=oferta_id).first()
+    # productswap = Productswap.query.filter(muestra_id==muestra_id,oferta_id=oferta_id).first()
+    print()
     if not productswap:
         new_productswap = Productswap(muestra_id, oferta_id, done)
         db.session.add(new_productswap)
@@ -300,7 +302,7 @@ def create_swap():
     
 @app.route('/swap/<id>', methods=['GET'])
 def get_swap(id):
-    products = Productswap.query.filter_by(muestra_id=id).join(Product, Product.id == Productswap.oferta_id).add_columns(Product.id, Product.name, Product.tags, Product.shortDesc, Product.longDesc, Product.cover_img, Product.gallery, Product.tradeBy, Product.username, Product.done).all()
+    products = Productswap.query.filter_by(muestra_id=id).join(Product, Product.id == Productswap.oferta_id).add_columns(Product.id, Product.name, Product.tags, Product.shortDesc, Product.longDesc, Product.cover_img, Product.gallery, Product.tradeBy, Product.username, Product.done, Product.user_email).all()
     result = products_schemas.dump(products)
     return jsonify(result)
 
@@ -315,7 +317,7 @@ def done_swap():
     if done != False:
         productmuestra.done = ofertaid  
     else:
-        productmuestra.done = False
+        productmuestra.done = 0
     db.session.commit()
 
     result = swap_schema.dump(productswap)
