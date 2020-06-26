@@ -163,8 +163,8 @@ def send_email():
     # message = "Thank you"
     
     # setup the parameters of the message
-    password = "15j!y#58zIR["
-    msg['From'] = 'base@dekaz.pro'
+    password = "=rp!5A-0-B}r"
+    msg['From'] = 'telocambio@dekaz.pro'
     msg['To'] = emailreq
     msg['Subject'] = subject
     msg.add_header('Content-Type', 'text/html')
