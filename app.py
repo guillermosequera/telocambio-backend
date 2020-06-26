@@ -287,7 +287,7 @@ def create_swap():
     done = request.json['done']
     productswap = Productswap.query.filter_by(muestra_id=muestra_id).filter_by(oferta_id=oferta_id).first()
     # productswap = Productswap.query.filter(muestra_id==muestra_id,oferta_id=oferta_id).first()
-    print()
+    # print()
     if not productswap:
         new_productswap = Productswap(muestra_id, oferta_id, done)
         db.session.add(new_productswap)
