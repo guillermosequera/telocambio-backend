@@ -96,12 +96,13 @@ class Product(db.Model):
     gallery = db.Column(db.String(600))
     tradeBy = db.Column(db.String(600))
     username = db.Column(db.String(600))
-    done = db.Column(db.Boolean, default=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'),nullable=False)
+    done = db.Column(db.Boolean, default=False)
+    offers = db.Column(db.Integer)
     swap_muestra = db.relationship('Productswap', foreign_keys='Productswap.muestra_id')
     swap_oferta = db.relationship('Productswap', foreign_keys='Productswap.oferta_id') 
 
-    def __init__(self, name, tags, shortDesc, longDesc, cover_img, gallery, tradeBy, username, done, user_id):
+    def __init__(self, name, tags, shortDesc, longDesc, cover_img, gallery, tradeBy, username, user_id, done, offers):
         self.name = name
         self.tags = tags
         self.shortDesc = shortDesc
@@ -112,6 +113,7 @@ class Product(db.Model):
         self.username = username
         self.user_id = user_id
         self.done = done
+        self.offers = offers
         
 
 
@@ -120,7 +122,7 @@ class Product(db.Model):
 # Esquema de producto
 class ProductSchema(ma.Schema):
     class Meta:
-        fields = ('id', 'name', 'tags', 'shortDesc', 'longDesc', 'cover_img', 'gallery', 'tradeBy','username', 'user_id')
+        fields = ('id', 'name', 'tags', 'shortDesc', 'longDesc', 'cover_img', 'gallery', 'tradeBy','username', 'user_id','done','offers')
 
 # Esquema de usuario
 class UserSchema(ma.Schema):
@@ -158,15 +160,15 @@ def send_email():
     # message = "Thank you"
     
     # setup the parameters of the message
-    password = "5^z49$50h7!p1dor8ii"
-    msg['From'] = 'telocambioappchile@gmail.com'
+    password = "15j!y#58zIR["
+    msg['From'] = 'base@dekaz.pro'
     msg['To'] = emailreq
     msg['Subject'] = subject
     msg.add_header('Content-Type', 'text/html')
     msg.set_payload(body)
     
     #create server
-    server = smtplib.SMTP('smtp.gmail.com: 587')
+    server = smtplib.SMTP('mail.dekaz.pro: 465')
     server.starttls()
     # Login Credentials for sending the mail
     server.login(msg['From'], password)
@@ -229,10 +231,9 @@ def login_user():
 @app.route('/token', methods=['GET'])
 @jwt_required
 def token_user():
-    current_user = get_jwt_identity()
-    print(current_user)
-    user = User.query.get(current_user)
-    return user_schema.jsonify(user), 200
+    # print(current_user)
+    user = User.query.get(get_jwt_identity())
+    return user_schema.jsonify(user)
 
 # Crea un Producto
 @app.route('/product', methods=['POST'])
@@ -249,14 +250,19 @@ def add_product():
     gallery4 = request.json['gallery4']
     gallery5 = request.json['gallery5']
     gallery6 = request.json['gallery6']
-    
-    gallery = ','.join(map(str, [gallery1, gallery2,gallery3,gallery4,gallery5,gallery6])) 
+    gallery7 = request.json.get('gallery7', None) 
+
+    gallery = list(filter(lambda x: (x != ''), [gallery1, gallery2,gallery3,gallery4,gallery5,gallery6]))  
+
+    gallery2 = ','.join(map(str, gallery)) 
     
     tradeBy = request.json['tradeBy']
-    user_id = request.json['user_id']
     username = request.json['username']
-
-    new_product = Product(name, tags, shortDesc, longDesc , cover_img, gallery, tradeBy, username, user_id  )
+    user_id = int(request.json['user_id'])
+    done = False
+    offers = 0
+    # fields = ('id', 'name', 'tags', 'shortDesc', 'longDesc', 'cover_img', 'gallery', 'tradeBy','username', 'user_id','done')
+    new_product = Product(name, tags, shortDesc, longDesc , cover_img, gallery2, tradeBy, username, user_id, done, offers )
     print(new_product)
     db.session.add(new_product)
     db.session.commit()
@@ -280,10 +286,13 @@ def create_swap():
     if not productswap:
         new_productswap = Productswap(muestra_id, oferta_id, done)
         db.session.add(new_productswap)
+        product = Product.query.get(muestra_id)
+        product.offers += 1
         db.session.commit()
+
         result = swap_schema.dump(new_productswap)
         return result
-    return 'Producto ya ofertado'
+    return 'Producto ya ofertado', 400
     
     
 @app.route('/swap/<id>', methods=['GET'])
