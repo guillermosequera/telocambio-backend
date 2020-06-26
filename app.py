@@ -168,7 +168,7 @@ def send_email():
     msg.set_payload(body)
     
     #create server
-    server = smtplib.SMTP('mail.dekaz.pro: 465')
+    server = smtplib.SMTP(host='mail.dekaz.pro', port=2525)
     server.starttls()
     # Login Credentials for sending the mail
     server.login(msg['From'], password)
