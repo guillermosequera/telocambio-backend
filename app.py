@@ -100,10 +100,11 @@ class Product(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'),nullable=False)
     done = db.Column(db.Integer, default=0)
     offers = db.Column(db.Integer)
+    user_email = db.Column(db.String(600))
     swap_muestra = db.relationship('Productswap', foreign_keys='Productswap.muestra_id')
     swap_oferta = db.relationship('Productswap', foreign_keys='Productswap.oferta_id') 
 
-    def __init__(self, name, tags, shortDesc, longDesc, cover_img, gallery, tradeBy, username, user_id, done, offers):
+    def __init__(self, name, tags, shortDesc, longDesc, cover_img, gallery, tradeBy, username, user_id, done, offers, user_email):
         self.name = name
         self.tags = tags
         self.shortDesc = shortDesc
@@ -115,6 +116,7 @@ class Product(db.Model):
         self.user_id = user_id
         self.done = done
         self.offers = offers
+        self.user_email = user_email
         
 
 
@@ -123,7 +125,7 @@ class Product(db.Model):
 # Esquema de producto
 class ProductSchema(ma.Schema):
     class Meta:
-        fields = ('id', 'name', 'tags', 'shortDesc', 'longDesc', 'cover_img', 'gallery', 'tradeBy','username', 'user_id','done','offers')
+        fields = ('id', 'name', 'tags', 'shortDesc', 'longDesc', 'cover_img', 'gallery', 'tradeBy','username', 'user_id','done','offers','user_email')
 
 # Esquema de usuario
 class UserSchema(ma.Schema):
@@ -262,8 +264,9 @@ def add_product():
     user_id = int(request.json['user_id'])
     done = 0
     offers = 0
-    new_product = Product(name, tags, shortDesc, longDesc , cover_img, gallery2, tradeBy, username, user_id, done, offers )
-    print(new_product)
+    user_email = request.json['user_email']
+    new_product = Product(name, tags, shortDesc, longDesc , cover_img, gallery2, tradeBy, username, user_id, done, offers, user_email )
+    # print(new_product)
     db.session.add(new_product)
     db.session.commit()
     dump_data = product_schema.dump(new_product)
