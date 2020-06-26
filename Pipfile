@@ -18,6 +18,7 @@ flask-bcrypt = "*"
 flask-cors = "*"
 gunicorn = "*"
 psycopg2 = "*"
+yagmail = "*"
 
 [requires]
 python_version = "3.8"

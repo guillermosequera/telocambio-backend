@@ -20,6 +20,7 @@ from email.mime.text import MIMEText
 import email.message
 import smtplib
 
+
 #email
 
 
@@ -37,10 +38,10 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'db.sqlite')
 
 # MYSQL LOCAL
-# app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:@localhost/telocambio'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:@localhost/telocambio'
 
 # HEROKU POSTGRESS
-app.config['SQLALCHEMY_DATABASE_URI'] = "postgres://mzjzfmbvieoopk:47d4d3d8426745473cccf8acf4305dbcd2c4b46b157a37954c2a6d82a2480810@ec2-34-233-226-84.compute-1.amazonaws.com:5432/d602ph6akhserd"
+# app.config['SQLALCHEMY_DATABASE_URI'] = "postgres://mzjzfmbvieoopk:47d4d3d8426745473cccf8acf4305dbcd2c4b46b157a37954c2a6d82a2480810@ec2-34-233-226-84.compute-1.amazonaws.com:5432/d602ph6akhserd"
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['JWT_SECRET_KEY'] = 'Gaq5qR6v7BMSojBSQqCs62UBxy9xiUSL15vE9T_KWaTCEziPRfe0WrFBvVZS4RTbqoEP8d0UB0EA'
@@ -261,7 +262,6 @@ def add_product():
     user_id = int(request.json['user_id'])
     done = False
     offers = 0
-    # fields = ('id', 'name', 'tags', 'shortDesc', 'longDesc', 'cover_img', 'gallery', 'tradeBy','username', 'user_id','done')
     new_product = Product(name, tags, shortDesc, longDesc , cover_img, gallery2, tradeBy, username, user_id, done, offers )
     print(new_product)
     db.session.add(new_product)
