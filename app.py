@@ -38,10 +38,10 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'db.sqlite')
 
 # MYSQL LOCAL
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:@localhost/telocambio'
+# app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:@localhost/telocambio'
 
 # HEROKU POSTGRESS
-# app.config['SQLALCHEMY_DATABASE_URI'] = "postgres://mzjzfmbvieoopk:47d4d3d8426745473cccf8acf4305dbcd2c4b46b157a37954c2a6d82a2480810@ec2-34-233-226-84.compute-1.amazonaws.com:5432/d602ph6akhserd"
+app.config['SQLALCHEMY_DATABASE_URI'] = "postgres://mzjzfmbvieoopk:47d4d3d8426745473cccf8acf4305dbcd2c4b46b157a37954c2a6d82a2480810@ec2-34-233-226-84.compute-1.amazonaws.com:5432/d602ph6akhserd"
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['JWT_SECRET_KEY'] = 'Gaq5qR6v7BMSojBSQqCs62UBxy9xiUSL15vE9T_KWaTCEziPRfe0WrFBvVZS4RTbqoEP8d0UB0EA'
@@ -98,7 +98,7 @@ class Product(db.Model):
     tradeBy = db.Column(db.String(600))
     username = db.Column(db.String(600))
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'),nullable=False)
-    done = db.Column(db.Boolean, default=False)
+    done = db.Column(db.Integer, default=0)
     offers = db.Column(db.Integer)
     swap_muestra = db.relationship('Productswap', foreign_keys='Productswap.muestra_id')
     swap_oferta = db.relationship('Productswap', foreign_keys='Productswap.oferta_id') 
@@ -260,7 +260,7 @@ def add_product():
     tradeBy = request.json['tradeBy']
     username = request.json['username']
     user_id = int(request.json['user_id'])
-    done = False
+    done = 0
     offers = 0
     new_product = Product(name, tags, shortDesc, longDesc , cover_img, gallery2, tradeBy, username, user_id, done, offers )
     print(new_product)
@@ -308,6 +308,11 @@ def done_swap():
     done = request.json['done']
     productswap = Productswap.query.filter_by(muestra_id=muestraid).filter_by(oferta_id=ofertaid).first()
     productswap.done = done 
+    productmuestra = Product.query.get(muestraid)
+    if done != False:
+        productmuestra.done = ofertaid  
+    else:
+        productmuestra.done = False
     db.session.commit()
 
     result = swap_schema.dump(productswap)
