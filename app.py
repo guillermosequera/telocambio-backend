@@ -223,7 +223,7 @@ def login_user():
         return 'User not found', 404
 
     if bcrypt.check_password_hash(user.password, str(password)):
-        access_token = create_access_token(identity=user.id)
+        access_token = create_access_token(identity=user.id, expires_delta=False)
         return jsonify(access_token=access_token), 200
     else: 
         
