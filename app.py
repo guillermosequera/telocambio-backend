@@ -176,9 +176,9 @@ def send_email():
     # send the message via the server.
     server.sendmail(msg['From'], msg['To'], msg.as_string())
     server.quit()
-    print("successfully sent email to %s:" % (msg['To']))
+    # print("successfully sent email to %s:" % (msg['To']))
 
-    return "successfully sent email to %s:" % (msg['To'])
+    return "Email exitoso"
     
 # Crea un USUARIO
 @app.route('/register', methods=['POST'])
