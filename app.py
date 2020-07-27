@@ -48,9 +48,6 @@ def send_email():
     body = request.json.get('body', None) 
 
     msg = email.message.Message()
-    # msg = MIMEMultipart()
-    # message = "Thank you"
-    
     # setup the parameters of the message
     password = os.environ.get('EMAIL_PASS')
     msg['From'] = os.environ.get('EMAIL_FROM')
