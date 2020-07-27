@@ -25,4 +25,3 @@ python_version = "3.8"
 
 [scripts]
 start="flask run"
-start2="python src/app.py"
