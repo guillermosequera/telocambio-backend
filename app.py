@@ -9,8 +9,8 @@ from flask_jwt_extended import (
     get_jwt_identity
 )
 from flask_bcrypt import Bcrypt
-import os
-import settings
+
+from src import settings
 import json
 import datetime
 from flask_cors import CORS
@@ -21,6 +21,7 @@ import email.message
 import smtplib
 
 
+# print(settings.CHAO)
 #email
 
 
@@ -31,17 +32,17 @@ app = Flask(__name__)
 CORS(app)
 # app.config['CORS_HEADERS'] = 'Content-Type'
 
-basedir = os.path.abspath(os.path.dirname(__file__))
+
 
 
 # SQlite
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'db.sqlite')
 
 # MYSQL LOCAL
-# app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:@localhost/telocambio'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:@localhost/telocambio'
 
 # HEROKU POSTGRESS
-app.config['SQLALCHEMY_DATABASE_URI'] = "postgres://mzjzfmbvieoopk:47d4d3d8426745473cccf8acf4305dbcd2c4b46b157a37954c2a6d82a2480810@ec2-34-233-226-84.compute-1.amazonaws.com:5432/d602ph6akhserd"
+# app.config['SQLALCHEMY_DATABASE_URI'] = "postgres://mzjzfmbvieoopk:47d4d3d8426745473cccf8acf4305dbcd2c4b46b157a37954c2a6d82a2480810@ec2-34-233-226-84.compute-1.amazonaws.com:5432/d602ph6akhserd"
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['JWT_SECRET_KEY'] = 'Gaq5qR6v7BMSojBSQqCs62UBxy9xiUSL15vE9T_KWaTCEziPRfe0WrFBvVZS4RTbqoEP8d0UB0EA'
@@ -77,8 +78,6 @@ class User(db.Model):
     password = db.Column(db.String(200))
     role = db.Column(db.String(100))
     products = db.relationship('Product', backref='user', lazy=True)
-    
-
     def __init__(self, firstname, lastname, email, password, role):
         self.firstname = firstname
         self.lastname = lastname
@@ -103,7 +102,6 @@ class Product(db.Model):
     user_email = db.Column(db.String(600))
     swap_muestra = db.relationship('Productswap', foreign_keys='Productswap.muestra_id')
     swap_oferta = db.relationship('Productswap', foreign_keys='Productswap.oferta_id') 
-
     def __init__(self, name, tags, shortDesc, longDesc, cover_img, gallery, tradeBy, username, user_id, done, offers, user_email):
         self.name = name
         self.tags = tags
