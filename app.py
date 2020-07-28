@@ -17,13 +17,6 @@ from email.mime.text import MIMEText
 import email.message
 import smtplib
 
-# import boto3
-# s3_client = boto3.client(
-#     "s3",
-#     aws_access_key_id=os.environ.get('S3_ACCESS_KEY_ID'),
-#     aws_secret_access_key=os.environ.get('S3_ACCESS_SECRET_KEY')
-# )
-
 from src import models, s3handler
 
 
