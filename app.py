@@ -1,6 +1,6 @@
 import os
 import json
-from datetime import datetime 
+
 from dotenv import load_dotenv
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
@@ -17,15 +17,14 @@ from email.mime.text import MIMEText
 import email.message
 import smtplib
 
-import boto3
-# from boto.s3.key import Key
-s3_client = boto3.client(
-    "s3",
-    aws_access_key_id=os.environ.get('S3_ACCESS_KEY_ID'),
-    aws_secret_access_key=os.environ.get('S3_ACCESS_SECRET_KEY')
-)
+# import boto3
+# s3_client = boto3.client(
+#     "s3",
+#     aws_access_key_id=os.environ.get('S3_ACCESS_KEY_ID'),
+#     aws_secret_access_key=os.environ.get('S3_ACCESS_SECRET_KEY')
+# )
 
-from src import models
+from src import models, s3handler
 
 
 load_dotenv()
@@ -268,29 +267,8 @@ def test():
 @app.route('/upload', methods=['POST'])
 def upload():
     file = request.files['fileinput']
-    split_filename = file.filename.split('.')
-    dt = datetime.now()
-    seq = dt.strftime("%m%d%Y-%H%M%S%f")
-    finalfilename = split_filename[0] + '_' + seq + '.' + split_filename[1]
-
-    s3_resource = boto3.resource('s3')
-    my_bucket = s3_resource.Bucket(os.environ.get('S3_BUCKET_NAME'))
-
-    my_bucket.Object(finalfilename).put(Body=file, ACL='public-read',ContentType='image/jpeg')
-    
-    print(file)
-    return f"https://{os.environ.get('S3_BUCKET_NAME')}.s3-us-west-2.amazonaws.com/{finalfilename}"
-    # return jsonify(fileinput)
-
-# @app.route('/showfiles', methods=['GET'])
-# def fileFuncshow():
-#     s3_resource = boto3.resource('s3')
-#     my_bucket =  s3_resource.Bucket(os.environ.get('S3_BUCKET_NAME'))
-#     sumaries = my_bucket.objects.all()
-#     print(f"{sumaries}")
-#     return jsonify(f"{sumaries}")
-
-
+    filename = s3handler.s3upload(file)
+    return filename
 
 #servidor
 if __name__ == '_main_':
