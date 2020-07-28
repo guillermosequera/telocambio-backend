@@ -16,6 +16,13 @@ from email.mime.text import MIMEText
 import email.message
 import smtplib
 
+import boto3
+s3 = boto3.client(
+    "s3",
+    aws_access_key_id=os.environ.get('S3_ACCESS_KEY_ID'),
+    aws_secret_access_key=os.environ.get('S3_ACCESS_SECRET_KEY')
+)
+
 from src import models
 
 
@@ -256,10 +263,26 @@ def delete_product(id):
 def test():
     return 'API ONLINE'
 
-@app.route('/file', methods=['POST'])
-def fileFunc():
-    fileinput = request.files['fileinput']
-    return jsonify(fileinput)
+@app.route('/upload', methods=['POST'])
+def upload():
+    file = request.files['fileinput']
+
+    s3_resource = boto3.resource('s3')
+    my_bucket = s3_resource.Bucket(os.environ.get('S3_BUCKET_NAME'))
+    my_bucket.Object(file.filename).put(Body=file, ACL='public-read')
+    # key.set_acl('public-read')
+    return 'uploaded' + ' https://telocambio.s3-us-west-2.amazonaws.com/'+file.filename
+    # return jsonify(fileinput)
+
+@app.route('/showfiles', methods=['GET'])
+def fileFuncshow():
+    s3_resource = boto3.resource('s3')
+    my_bucket =  s3_resource.Bucket(os.environ.get('S3_BUCKET_NAME'))
+    sumaries = my_bucket.objects.all()
+    print(f"{sumaries}")
+    return jsonify(f"{sumaries}")
+
+
 
 #servidor
 if __name__ == '_main_':
