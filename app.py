@@ -250,12 +250,16 @@ def delete_product(id):
     product = models.Product.query.get(id)
     models.db.session.delete(product)
     models.db.session.commit()
-
     return models.product_schema.jsonify(product)
  
 @app.route('/', methods=['GET'])
 def test():
     return 'API ONLINE'
+
+@app.route('/file', methods=['POST'])
+def fileFunc():
+    fileinput = request.files['fileinput']
+    return jsonify(fileinput)
 
 #servidor
 if __name__ == '_main_':
