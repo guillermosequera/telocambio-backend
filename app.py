@@ -131,17 +131,17 @@ def add_product():
     longDesc = request.json['longDesc']
     cover_img = request.json['cover_img']
     
-    gallery1 = request.json['gallery1']
-    gallery2 = request.json['gallery2']
-    gallery3 = request.json['gallery3']
-    gallery4 = request.json['gallery4']
-    gallery5 = request.json['gallery5']
-    gallery6 = request.json['gallery6']
-    gallery7 = request.json.get('gallery7', None) 
+    gallery1 = request.json.get('gallery1', '') 
+    gallery2 = request.json.get('gallery2', '') 
+    gallery3 = request.json.get('gallery3', '') 
+    gallery4 = request.json.get('gallery4', '') 
+    gallery5 = request.json.get('gallery5', '') 
+    gallery6 = request.json.get('gallery6', '') 
+    gallery7 = request.json.get('gallery7', '') 
 
     gallery = list(filter(lambda x: (x != ''), [gallery1, gallery2,gallery3,gallery4,gallery5,gallery6]))  
 
-    gallery2 = ','.join(map(str, gallery)) 
+    galleryfinal = ','.join(map(str, gallery)) 
     
     tradeBy = request.json['tradeBy']
     username = request.json['username']
@@ -149,7 +149,7 @@ def add_product():
     done = 0
     offers = 0
     user_email = request.json['user_email']
-    new_product = models.Product(name, tags, shortDesc, longDesc , cover_img, gallery2, tradeBy, username, user_id, done, offers, user_email )
+    new_product = models.Product(name, tags, shortDesc, longDesc , cover_img, galleryfinal, tradeBy, username, user_id, done, offers, user_email )
     # print(new_product)
     models.db.session.add(new_product)
     models.db.session.commit()
@@ -232,17 +232,28 @@ def get_product(id):
 @app.route('/product/<id>', methods=['PUT'])
 def update_product(id):
     product = models.Product.query.get(id)
-    name = request.json['name']
-    description = request.json['description']
-    price = request.json['price']
-    qty = request.json['qty']
-    product.name = name
-    product.description = description
-    product.price = price
-    product.qty = qty
+    product.name = request.json.get('name', product.name)
+    product.tags = request.json.get('tags', product.tags)
+    product.shortDesc = request.json.get('shortDesc', product.shortDesc)
+    product.longDesc = request.json.get('longDesc', product.longDesc)
+    product.tradeBy = request.json.get('tradeBy', product.tradeBy)
+    product.cover_img = request.json.get('cover_img', product.cover_img) 
+    gallery1 = request.json.get('gallery1', '') 
+    gallery2 = request.json.get('gallery2', '') 
+    gallery3 = request.json.get('gallery3', '') 
+    gallery4 = request.json.get('gallery4', '') 
+    gallery5 = request.json.get('gallery5', '') 
+    gallery6 = request.json.get('gallery6', '') 
+    gallery_old = product.gallery
+    gallery_new = list(map( lambda x: (x != ''), [gallery1, gallery2,gallery3,gallery4,gallery5,gallery6]))
+    gallery_add = gallery_old.split(',') + gallery_new
+    gallery_add = list(dict.fromkeys(gallery_add))
+    gallery_add = list(filter(None, gallery_add))
+    galleryfinal = ','.join(list(dict.fromkeys(gallery_add)))
+    product.gallery = galleryfinal
+    
     models.db.session.commit()
     dump_data = models.product_schema.dump(product)
-
     return dump_data
 
 # Elimina un producto
@@ -259,9 +270,37 @@ def test():
 
 @app.route('/upload', methods=['POST'])
 def upload():
-    file = request.files['fileinput']
-    filename = s3handler.s3upload(file)
-    return filename
+    cover_img = request.files.get('cover_img', None)
+    gallery1 = request.files.get('gallery1', None)
+    gallery2 = request.files.get('gallery2', None)
+    gallery3 = request.files.get('gallery3', None)
+    gallery4 = request.files.get('gallery4', None)
+    gallery5 = request.files.get('gallery5', None)
+    gallery6 = request.files.get('gallery6', None)
+    line_items=[]
+    if cover_img:
+        f_cover_img = s3handler.s3upload(cover_img)
+        line_items.append({"cover_img": f_cover_img })
+    if gallery1:
+        f_gallery1 = s3handler.s3upload(gallery1)
+        line_items.append({"gallery1": f_gallery1 })
+    if gallery2:
+        f_gallery2 = s3handler.s3upload(gallery2)
+        line_items.append({"gallery2": f_gallery2 })
+    if gallery3:
+        f_gallery3 = s3handler.s3upload(gallery3)
+        line_items.append({"gallery3": f_gallery3 })
+    if gallery4:
+        f_gallery4 = s3handler.s3upload(gallery4)
+        line_items.append({"gallery4": f_gallery4 })
+    if gallery5:
+        f_gallery5 = s3handler.s3upload(gallery5)
+        line_items.append({"gallery5": f_gallery5 })
+    if gallery6:
+        f_gallery6 = s3handler.s3upload(gallery6)
+        line_items.append({"gallery6": f_gallery6 })
+    return jsonify(line_items)
+    # jsonify(filename1, filename2)
 
 #servidor
 if __name__ == '_main_':
