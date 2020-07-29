@@ -2,7 +2,8 @@ from dotenv import load_dotenv
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
-
+import functools
+import flask
 from flask_migrate import Migrate
 from flask_jwt_extended import (
     JWTManager, jwt_required, create_access_token,
@@ -19,6 +20,11 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import email.message
 import smtplib
+# from authlib.integrations.flask_client import OAuth
+# from authlib.client import OAuth2Session
+import google.oauth2.credentials
+import googleapiclient.discovery
+import google_auth
 
 
 #email
@@ -26,7 +32,9 @@ import smtplib
 
 load_dotenv()
 #incio de la app
-
+app = flask.Flask(__name__)
+app.secret_key = os.environ.get("FN_FLASK_SECRET_KEY", default=False)
+# app.register_blueprint(google_auth.app)
 app = Flask(__name__)
 CORS(app)
 # app.config['CORS_HEADERS'] = 'Content-Type'
@@ -38,10 +46,10 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'db.sqlite')
 
 # MYSQL LOCAL
-# app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:@localhost/telocambio'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:@localhost/telocambio'
 
 # HEROKU POSTGRESS
-app.config['SQLALCHEMY_DATABASE_URI'] = "postgres://mzjzfmbvieoopk:47d4d3d8426745473cccf8acf4305dbcd2c4b46b157a37954c2a6d82a2480810@ec2-34-233-226-84.compute-1.amazonaws.com:5432/d602ph6akhserd"
+# app.config['SQLALCHEMY_DATABASE_URI'] = "postgres://mzjzfmbvieoopk:47d4d3d8426745473cccf8acf4305dbcd2c4b46b157a37954c2a6d82a2480810@ec2-34-233-226-84.compute-1.amazonaws.com:5432/d602ph6akhserd"
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['JWT_SECRET_KEY'] = 'Gaq5qR6v7BMSojBSQqCs62UBxy9xiUSL15vE9T_KWaTCEziPRfe0WrFBvVZS4RTbqoEP8d0UB0EA'
@@ -152,6 +160,15 @@ users_schemas = UserSchema(many=True)
 
 
 # Envia un EMAIL
+@app.route('/')
+def index():
+    if google_auth.is_logged_in():
+        user_info = google_auth.get_user_info()
+        return '<div>You are currently logged in as ' + user_info['given_name'] + '<div><pre>' + json.dumps(user_info, indent=4) + "</pre>"
+
+    return 'You are not currently logged in.'
+
+
 @app.route('/sendemail', methods=['POST'])
 def send_email():
     emailreq = request.json.get('email', None)
