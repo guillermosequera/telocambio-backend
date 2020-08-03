@@ -2,7 +2,7 @@ import os
 import json
 
 from dotenv import load_dotenv
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_jwt_extended import (
@@ -42,12 +42,27 @@ models.db.init_app(app)
 models.ma.init_app(app)
 
 # Envia un EMAIL
+@app.route('/test', methods=['GET'])
+def test():
+    return render_template("contactform.html", content='coso del coso')
+
+
+# Envia un EMAIL
 @app.route('/sendemail', methods=['POST'])
 def send_email():
     emailreq = request.json.get('email', None)
     subject = request.json.get('subject', None) 
     body = request.json.get('body', None) 
-
+    template = request.json.get('template', None) 
+    data = request.json.get('data', None)
+    if(template == 'contactform'):
+        htmlbody = render_template('contactform.html',name=data['nombre'], lastname=data['apellido'], email=data['email'], message=data['mensaje'])
+    if(template == 'swapdone'):
+        htmlbody = render_template('swapdone.html',oferta_name=data['oferta_name'], oferta_img=data['oferta_img'], oferta_link=data['oferta_link'], muestra_name=data['muestra_name'], muestra_img=data['muestra_img'], muestra_link=data['muestra_link'], name=data['name'], email=data['email'])
+    if(template == 'swapreceive'):
+        htmlbody = render_template('swapreceive.html',oferta_name=data['oferta_name'], oferta_img=data['oferta_img'], oferta_link=data['oferta_link'], muestra_name=data['muestra_name'], muestra_img=data['muestra_img'], muestra_link=data['muestra_link'], login=data['login'])
+    if(template == 'swapsend'):
+        htmlbody = render_template('swapsend.html',oferta_name=data['oferta_name'], oferta_img=data['oferta_img'], oferta_link=data['oferta_link'], muestra_name=data['muestra_name'], muestra_img=data['muestra_img'], muestra_link=data['muestra_link'])
     msg = email.message.Message()
     # setup the parameters of the message
     password = os.environ.get('EMAIL_PASS')
@@ -55,14 +70,15 @@ def send_email():
     msg['To'] = emailreq
     msg['Subject'] = subject
     msg.add_header('Content-Type', 'text/html')
-    msg.set_payload(body)
+    # htmlbody = render_template('contactform.html')
+    msg.set_payload(htmlbody)
     #create server
     server = smtplib.SMTP(host=os.environ.get('EMAIL_HOST'), port=os.environ.get('EMAIL_PORT'))
     server.starttls()
     # Login Credentials for sending the mail
     server.login(msg['From'], password)
     # send the message via the server.
-    server.sendmail(msg['From'], msg['To'], msg.as_string())
+    server.sendmail(msg['From'], msg['To'], msg.as_string().encode("ascii", errors="ignore"))
     server.quit()
     return {"email": "Email exitoso"}
     
@@ -265,7 +281,7 @@ def delete_product(id):
     return models.product_schema.jsonify(product)
  
 @app.route('/', methods=['GET'])
-def test():
+def test_home():
     return 'API ONLINE'
 
 @app.route('/upload', methods=['POST'])
