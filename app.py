@@ -207,18 +207,38 @@ def get_swap(id):
     result = models.products_schemas.dump(products)
     return jsonify(result)
 
+@app.route('/swap/delete', methods=['POST'])
+def done_reject():
+    ofertaid = request.json['oferta_id']
+    muestraid = request.json['muestra_id']
+    productswap = models.Productswap.query.filter_by(muestra_id=muestraid).filter_by(oferta_id=ofertaid).first()
+    models.db.session.delete(productswap)
+    
+    productmuestra= models.Product.query.get(muestraid)
+    productmuestra.offers -= 1
+    
+    models.db.session.commit()
+    result = models.swap_schema.dump(productmuestra)
+    return result
+
+
 @app.route('/swap/done', methods=['POST'])
 def done_swap():
     ofertaid = request.json['oferta_id']
     muestraid = request.json['muestra_id']
     done = request.json['done']
+    olddone = request.json['olddone']
     productswap = models.Productswap.query.filter_by(muestra_id=muestraid).filter_by(oferta_id=ofertaid).first()
     productswap.done = done 
     productmuestra = models.Product.query.get(muestraid)
+    if olddone != 0:
+        prevproduct = models.Product.query.get(olddone)
+        prevproduct.done = 0
+
     if done != False:
         productmuestra.done = ofertaid  
-    else:
-        productmuestra.done = 0
+        producto_oferta = models.Product.query.get(ofertaid)
+        producto_oferta.done = -1
     models.db.session.commit()
 
     result = models.swap_schema.dump(productswap)
