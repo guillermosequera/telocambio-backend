@@ -64,6 +64,9 @@ def send_email():
     if(template == 'swapsend'):
         htmlbody = render_template('swapsend.html',oferta_name=data['oferta_name'], oferta_img=data['oferta_img'], oferta_link=data['oferta_link'], muestra_name=data['muestra_name'], muestra_img=data['muestra_img'], muestra_link=data['muestra_link'])
     msg = email.message.Message()
+        if(template == 'swapno'):
+        htmlbody = render_template('swapno.html',oferta_name=data['oferta_name'], oferta_img=data['oferta_img'], oferta_link=data['oferta_link'], muestra_name=data['muestra_name'])
+    msg = email.message.Message()
     # setup the parameters of the message
     password = os.environ.get('EMAIL_PASS')
     msg['From'] = os.environ.get('EMAIL_FROM')
