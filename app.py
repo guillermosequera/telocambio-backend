@@ -299,6 +299,8 @@ def update_product(id):
 @app.route('/product/<id>', methods=['DELETE'])
 def delete_product(id):
     product = models.Product.query.get(id)
+    muestraswap = models.Productswap.query.filter_by(muestra_id=id).delete()
+    ofertaswap = models.Productswap.query.filter_by(oferta_id=id).delete()
     models.db.session.delete(product)
     models.db.session.commit()
     return models.product_schema.jsonify(product)
